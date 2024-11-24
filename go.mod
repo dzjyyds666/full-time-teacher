@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/mojocn/base64Captcha v1.3.6
+	github.com/otiai10/gosseract/v2 v2.4.1
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/spf13/viper v1.19.0
 	golang.org/x/crypto v0.29.0

@@ -23,6 +23,10 @@ func InitRouter(r *gin.Engine, config *config.Config) {
 
 			public.POST("/loginpass", login.LoginByPassword)
 			public.POST("/loginver", login.LoginByVerification)
+
+			public.POST("/ocr", ai.OCR)
+			public.POST("/textanswer", ai.TextAnswer)
+
 		}
 
 		// 需要认证的路由组
@@ -30,7 +34,6 @@ func InitRouter(r *gin.Engine, config *config.Config) {
 		auth.Use(middlewares.TokenVerify())
 		{
 			auth.POST("/putfile", cos.PutFile)
-			auth.POST("/textanswer", ai.TextAnswer)
 		}
 	}
 }
