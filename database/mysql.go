@@ -3,6 +3,7 @@ package database
 import (
 	"FullTimeTeacher/config"
 	"FullTimeTeacher/log/logx"
+	"FullTimeTeacher/models"
 	"fmt"
 
 	"gorm.io/driver/mysql"
@@ -27,4 +28,6 @@ func InitMySQL(config config.MySQLConfig) {
 	}
 
 	logx.GetLogger("logx").Info("MySQL连接成功")
+
+	MyDB.AutoMigrate(&models.ProblemInfo{}, &models.ProblemType{}, &models.ProblemReplay{}, &models.UserInfo{})
 }

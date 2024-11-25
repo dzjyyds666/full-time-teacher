@@ -2,9 +2,9 @@ package routers
 
 import (
 	"FullTimeTeacher/config"
-	"FullTimeTeacher/controllers/ai"
-	"FullTimeTeacher/controllers/cos"
-	"FullTimeTeacher/controllers/login"
+	"FullTimeTeacher/handlers/ai"
+	"FullTimeTeacher/handlers/cos"
+	"FullTimeTeacher/handlers/login"
 	"FullTimeTeacher/middlewares"
 
 	"github.com/gin-gonic/gin"
