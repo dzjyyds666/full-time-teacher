@@ -45,7 +45,7 @@ func (cl *CustomLogger) Infof(format string, message interface{}) {
 
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 
 	log.Println(msg)
 }
@@ -65,7 +65,7 @@ func (cl *CustomLogger) Errorf(format string, message interface{}) {
 
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 
 	log.Println(msg)
 }
@@ -85,7 +85,7 @@ func (cl *CustomLogger) Debugf(format string, message interface{}) {
 
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 
 	log.Println(msg)
 }
@@ -105,7 +105,7 @@ func (cl *CustomLogger) Warnf(format string, message interface{}) {
 
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 
 	log.Println(msg)
 }
@@ -125,7 +125,7 @@ func (cl *CustomLogger) Fatalf(format string, message interface{}) {
 
 	log.SetOutput(os.Stdout)
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 
 	log.Fatalln(msg)
 }
@@ -150,7 +150,7 @@ func WriteToFile(logPath string, logMsg string, level string, cl *CustomLogger) 
 
 	//设置日志输出
 	log.SetPrefix(level)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 	log.SetOutput(file)
 
 	log.Println(logMsg)

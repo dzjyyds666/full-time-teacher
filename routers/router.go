@@ -21,11 +21,8 @@ func InitRouter(r *gin.Engine, config *config.Config) {
 			public.POST("/register", login.Register)
 			public.GET("/verification", login.SendEmail)
 
-			public.POST("/loginpass", login.LoginByPassword)
-			public.POST("/loginver", login.LoginByVerification)
-
-			public.POST("/ocr", ai.OCR)
-			public.POST("/textanswer", ai.TextAnswer)
+			public.POST("/loginpass", login.LoginByPassword)    // 密码登录
+			public.POST("/loginver", login.LoginByVerification) // 验证码登录
 
 		}
 
@@ -33,7 +30,12 @@ func InitRouter(r *gin.Engine, config *config.Config) {
 		auth := v1.Group("")
 		auth.Use(middlewares.TokenVerify())
 		{
-			auth.POST("/putfile", cos.PutFile)
+			auth.POST("/putfile", cos.PutFile) // 上传文件
+
+			auth.POST("/ocr", ai.OCR)               // 图片识别
+			auth.POST("/textanswer", ai.TextAnswer) // 文本回答
+
+			auth.POST("/loginout", login.LogOut) // 退出登录
 		}
 	}
 }

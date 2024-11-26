@@ -123,3 +123,12 @@ func LoginByVerification(c *gin.Context) {
 		Experience:    user.Experience,
 	}))
 }
+
+func LogOut(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	_, err := database.RDB.Del(c, fmt.Sprintf(database.Redis_Token_Key, userID)).Result()
+	if err != nil {
+		panic("redis错误:" + err.Error())
+	}
+	c.JSON(http.StatusOK, result.NewResult(result.EnmuHttptatus.RequestSuccess, "退出成功", nil))
+}

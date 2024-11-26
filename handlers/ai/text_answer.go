@@ -33,11 +33,11 @@ func TextAnswer(c *gin.Context) {
 		c,
 		&qianfan.ChatCompletionRequest{
 			Messages: []qianfan.ChatCompletionMessage{
+				//qianfan.ChatCompletionAssistantMessage("你是一位助教老师，请回答学生有关学习的问题."),
 				qianfan.ChatCompletionUserMessage(message),
 			},
 		},
 	)
-	logx.GetLogger("logx").Infof("resp:%v", resp)
 	for {
 		r, err := resp.Recv()
 		if err != nil {
