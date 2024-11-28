@@ -16,6 +16,7 @@ type Config struct {
 	Redis      RedisConfig
 	Email      EmailConfig
 	AI         AIConfig
+	Cos        CosConfig
 }
 
 // MySQLConfig 结构体表示 MySQL 的配置
@@ -54,6 +55,16 @@ type AIConfig struct {
 	ApiKey    string `mapstructure:"api_key"`
 	SecretKey string `mapstructure:"secret_key"`
 	Endpoint  string `mapstructure:"endpoint"`
+}
+
+type CosConfig struct {
+	AliasName string   `mapstructure:"alias_name"`
+	AccessId  string   `mapstructure:"accessId"`
+	SecretKey string   `mapstructure:"secretKey"`
+	IamRoleid string   `mapstructure:"iamRoleid"`
+	Region    string   `mapstructure:"region"`
+	Buckets   []string `mapstructure:"buckets"`
+	Url       string   `mapstructure:"url"`
 }
 
 var GlobalConfig *Config

@@ -30,12 +30,10 @@ func InitRouter(r *gin.Engine, config *config.Config) {
 		auth := v1.Group("")
 		auth.Use(middlewares.TokenVerify())
 		{
-			auth.POST("/putfile", cos.PutFile) // 上传文件
-
-			auth.POST("/ocr", ai.OCR)               // 图片识别
-			auth.POST("/textanswer", ai.TextAnswer) // 文本回答
-
-			auth.POST("/loginout", login.LogOut) // 退出登录
+			auth.GET("/getStsToken", cos.GetStsToken) // 获取sts临时凭证
+			auth.POST("/ocr", ai.OCR)                 // 图片识别
+			auth.POST("/textanswer", ai.TextAnswer)   // 文本回答
+			auth.POST("/loginout", login.LogOut)      // 退出登录
 		}
 	}
 }
