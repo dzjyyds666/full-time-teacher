@@ -29,5 +29,5 @@ func InitMySQL(config config.MySQLConfig) {
 
 	logx.GetLogger("logx").Info("MySQL连接成功")
 
-	MyDB.AutoMigrate(&models.ProblemInfo{}, &models.ProblemType{}, &models.ProblemReplay{}, &models.UserInfo{})
+	MyDB.AutoMigrate(&models.ArticleInfo{}, &models.ArticleReplay{}, &models.ArticleType{}, &models.UserInfo{})
 }

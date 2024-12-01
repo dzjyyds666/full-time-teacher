@@ -14,6 +14,9 @@ type UserInfo struct {
 	CreateTime    string `json:"create_time,omitempty" gorm:"size:20"`          // 注册时间，长度为20
 	Status        string `json:"status,omitempty" gorm:"size:1;default:1"`      // 状态，长度为20，默认值为1 1：正常，0：锁定
 	Experience    string `json:"experience,omitempty" gorm:"size:10;default:0"` // 经验，长度为10，默认值为0
+
+	// 与文章分类表多对多
+	ArticleTypes []*ArticleType `json:"article_types,omitempty" gorm:"many2many:user_article_type;"`
 }
 
 func (ui *UserInfo) TableName() string {
