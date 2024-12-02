@@ -4,18 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1a1dc19e-5dd0-436b-bceb-3a0b0731ec6d" name="Changes" comment="屏蔽敏感信息">
-      <change afterPath="$PROJECT_DIR$/utils/set/set.go" afterDir="false" />
+    <list default="true" id="1a1dc19e-5dd0-436b-bceb-3a0b0731ec6d" name="Changes" comment="添加交流社区方法">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bootstrop.go" beforeDir="false" afterPath="$PROJECT_DIR$/bootstrop.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/mysql.go" beforeDir="false" afterPath="$PROJECT_DIR$/database/mysql.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers/ai/text_answer.go" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/ai/text_answer.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/handlers/communication/communicate.go" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/communication/communicate.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/problem_info.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article_info.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/problem_replay.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article_replay.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/problem_type.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article_type.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/user_info.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/user_info.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routers/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/routers/router.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,26 +62,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "Go Build.go build bootstrop.go.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "feature/dzj",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/study/vscode/fulltimeteacher/full-time-teacher",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Code Search"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Build.go build bootstrop.go.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/dzj&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/study/vscode/fulltimeteacher/full-time-teacher&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\study\vscode\fulltimeteacher\full-time-teacher\utils\set" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="go build bootstrop.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="full-time-teacher" />
@@ -119,7 +116,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="屏蔽敏感信息" />
-    <option name="LAST_COMMIT_MESSAGE" value="屏蔽敏感信息" />
+    <MESSAGE value="添加交流社区方法" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加交流社区方法" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

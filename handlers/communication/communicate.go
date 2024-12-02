@@ -5,6 +5,7 @@ import (
 	"FullTimeTeacher/log/logx"
 	"FullTimeTeacher/models"
 	"FullTimeTeacher/utils/result"
+	"FullTimeTeacher/utils/set"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -20,20 +21,24 @@ type article struct {
 	ArticleType *models.ArticleType
 }
 
-type replayWithUserInfo struct {
-	replayInfo *models.ArticleReplay
-	UserInfo   *models.UserInfo
+type rootInfo struct {
+	Username      string                `json:"username,omitempty"`
+	Avatar        string                `json:"avatar,omitempty"`
+	ArticleReplay *models.ArticleReplay `json:"article_reply,omitempty"`
+	ChlidrenInfo  []*chlidrenInfo       `json:"chlidren_info,omitempty"`
 }
 
-type replayList struct {
-	replayinfo *replayWithUserInfo
-	// 子评论
-	ChildrenReplayList []*replayWithUserInfo
+type chlidrenInfo struct {
+	Username      string                `json:"username,omitempty"`
+	Avatar        string                `json:"avatar,omitempty"`
+	ArticleReplay *models.ArticleReplay `json:"article_reply,omitempty"`
+	ToUsername    string                `json:"to_username,omitempty"`
 }
 
-type userCacheTable struct {
-	Username string
-	Avatar   string
+type userCache struct {
+	UserID   string `json:"user_id,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
+	Username string `json:"username,omitempty"`
 }
 
 // Publish 发布文章
@@ -85,7 +90,7 @@ func UpdateArticle(c *gin.Context) {
 
 	res = database.MyDB.Model(articleformdatabase).
 		Updates(models.ArticleInfo{
-			ArticleName: articleInfo.ArticleID,
+			ArticleName: articleInfo.ArticleName,
 			ArticleDesc: articleInfo.ArticleDesc,
 			UpdateTime:  time.Now().Format("2006-01-02 15:04:05"),
 		})
@@ -288,59 +293,81 @@ func DeleteReplay(c *gin.Context) {
 }
 
 // GetCommentList 获取评论信息列表
+func GetCommentList(c *gin.Context) {
+	// 分页获取评论列表
+	page := c.Query("page")
+	pageSize := c.Query("page_size")
+	pageInt, _ := strconv.Atoi(page)
+	pageSizeInt, _ := strconv.Atoi(pageSize)
 
-//func GetCommentList(c *gin.Context) {
-//	// 分页获取评论列表
-//	page := c.Query("page")
-//	pageSize := c.Query("page_size")
-//	pageInt, _ := strconv.Atoi(page)
-//	pageSizeInt, _ := strconv.Atoi(pageSize)
-//
-//	articleId := c.Query("article_id")
-//	var articleReplayList []*models.ArticleReplay
-//	// 查询评论根节点 parent_id为空
-//	res := database.MyDB.Where("article_id = ? and is_deleted = ? and parent_id = IS NULL", articleId, "0").
-//		Order("create_time DESC").
-//		Offset((pageInt - 1) * pageSizeInt).
-//		Limit(pageSizeInt).
-//		Find(&articleReplayList)
-//	if res.Error != nil {
-//		logx.GetLogger("logx").Errorf("获取评论列表失败:%s", res.Error.Error())
-//		panic("获取评论列表失败")
-//	}
-//
-//	// 用户信息表，用于缓存数据，减少数据库查询次数
-//	var userCache map[string]userCacheTable
-//	var userIdList []string
-//	for _, replay := range articleReplayList {
-//		userIdList = append(userIdList, replay.UserID)
-//	}
-//
-//	var resultList []*replayList
-//	// 给评论添加用户信息
-//	for _, replay := range articleReplayList {
-//		var replayWithUser *replayWithUserInfo
-//		replayWithUser.replayInfo = replay
-//		replayWithUser.UserInfo.Avatar = userCache[replay.UserID].Avatar
-//		replayWithUser.UserInfo.Username = userCache[replay.UserID].Username
-//
-//		// 获取评论的子评论
-//		res = database.MyDB.Where("article_id = ? and is_deleted = ? and parent_id = ?", articleId, "0", replay.ArticleReplayID).
-//			Find(articleReplayList)
-//		if res.Error != nil {
-//			logx.GetLogger("logx").Errorf("获取子评论失败:%s", res.Error.Error())
-//			panic("获取子评论失败")
-//		}
-//
-//	}
-//}
+	articleId := c.Query("article_id")
+	var rootsArticleReplayList []*rootInfo
+	// 查询评论根节点 parent_id为空
+	res := database.MyDB.Where("article_id = ? and is_deleted = ? and parent_id = IS NULL", articleId, "0").
+		Order("create_time DESC").
+		Offset((pageInt - 1) * pageSizeInt).
+		Limit(pageSizeInt).
+		Find(&rootsArticleReplayList)
+	if res.Error != nil {
+		logx.GetLogger("logx").Errorf("获取评论列表失败:%s", res.Error.Error())
+		panic("获取评论列表失败")
+	}
 
-func GetCommentUserInfo(userID []string) []*models.UserInfo {
+	// 获取评论的用户id
+	stringSet := set.NewStringSet()
+	for _, replay := range rootsArticleReplayList {
+		stringSet.Add(replay.ArticleReplay.UserID)
+		var chlidrensInfo []*chlidrenInfo
+		// 查询所有子评论
+		err := database.MyDB.
+			Where("article_id = ? and is_deleted = ? and parent_id = ?", articleId, "0", replay.ArticleReplay.UserID).
+			Order("create_time").
+			Find(chlidrensInfo).Error
+		if err != nil {
+			logx.GetLogger("logx").Errorf("获取子评论失败:%s", err.Error())
+			panic("获取子评论失败")
+		}
+		for _, chlidren := range chlidrensInfo {
+			stringSet.Add(chlidren.ArticleReplay.UserID)
+		}
+		replay.ChlidrenInfo = chlidrensInfo
+	}
+
+	// 一次性获取到所有的用户信息
+	userInfo := GetCommentUserInfo(stringSet.List())
+	for _, replay := range rootsArticleReplayList {
+		replay.Avatar = userInfo[replay.ArticleReplay.UserID].Avatar
+		replay.Username = userInfo[replay.ArticleReplay.UserID].Username
+		for _, chlidren := range replay.ChlidrenInfo {
+			chlidren.Avatar = userInfo[chlidren.ArticleReplay.UserID].Avatar
+			chlidren.Username = userInfo[chlidren.ArticleReplay.UserID].Username
+			chlidren.ToUsername = userInfo[chlidren.ArticleReplay.ToID].Username
+		}
+	}
+
+	c.JSON(http.StatusOK, result.Result{
+		Code: result.EnmuHttptatus.RequestSuccess,
+		Msg:  "获取评论列表成功",
+		Data: rootsArticleReplayList,
+	})
+}
+
+func GetCommentUserInfo(userID []string) map[string]userCache {
 	var userInfo []*models.UserInfo
-	res := database.MyDB.Where("user_id in ?", userID).Select("username", "avatar").First(userInfo)
+	res := database.MyDB.Where("user_id in ?", userID).Select("user_id", "username", "avatar").First(userInfo)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取用户信息失败:%s", res.Error.Error())
 		panic("获取用户信息失败")
 	}
-	return userInfo
+
+	userCacheTable := make(map[string]userCache)
+	for _, user := range userInfo {
+		//组装用户信息 ， 使用map存储，key为user_id，值为userCache
+		userCacheTable[user.UserID] = userCache{
+			Avatar:   user.Avatar,
+			UserID:   user.UserID,
+			Username: user.Username,
+		}
+	}
+	return userCacheTable
 }

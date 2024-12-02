@@ -21,7 +21,7 @@ func main() {
 	// 初始化database
 	database.InitDatabase(*config.GlobalConfig)
 	// 注册路由
-	routers.InitRouter(r, config.GlobalConfig)
+	routers.InitRouter(r)
 
 	r.Run(":9999")
 }
