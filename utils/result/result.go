@@ -25,26 +25,34 @@ var EnmuHttptatus = struct {
 	RequestFail    HttpStatus
 
 	//User Error
-	UserNotExist HttpStatus
-	TokenInvalid HttpStatus // Token 无效
-	TokenExpired HttpStatus // Token 过期
+	UserNotExist     HttpStatus
+	TokenInvalid     HttpStatus // Token 无效
+	TokenExpired     HttpStatus // Token 过期
+	UserIsRegistered HttpStatus // 用户已注册
 
-	RedisError HttpStatus
+	RedisError      HttpStatus
+	MySQLWriteError HttpStatus // 写入数据库失败
 
 	SystemError HttpStatus // 系统异常
 
 	ParamError HttpStatus // 参数错误
+
+	ArticleTypeExists HttpStatus // 文章类型已存在
 }{
 	RequestSuccess: 10200,
 	RequestFail:    10201,
 
-	UserNotExist: 10301,
-	TokenInvalid: 10302,
-	TokenExpired: 10303,
+	UserNotExist:     10301,
+	TokenInvalid:     10302,
+	TokenExpired:     10303,
+	UserIsRegistered: 10304,
 
-	RedisError: 10401,
+	RedisError:      10401,
+	MySQLWriteError: 10402,
 
 	SystemError: 10500,
 
 	ParamError: 10601,
+
+	ArticleTypeExists: 10701,
 }

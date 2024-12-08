@@ -22,17 +22,17 @@ type article struct {
 }
 
 type rootInfo struct {
-	Username      string                `json:"username,omitempty"`
-	Avatar        string                `json:"avatar,omitempty"`
-	ArticleReplay *models.ArticleReplay `json:"article_reply,omitempty"`
-	ChlidrenInfo  []*chlidrenInfo       `json:"chlidren_info,omitempty"`
+	Username      string               `json:"username,omitempty"`
+	Avatar        string               `json:"avatar,omitempty"`
+	ArticleReplay models.ArticleReplay `json:"article_reply,omitempty"`
+	ChlidrenInfo  []chlidrenInfo       `json:"chlidren_info,omitempty"`
 }
 
 type chlidrenInfo struct {
-	Username      string                `json:"username,omitempty"`
-	Avatar        string                `json:"avatar,omitempty"`
-	ArticleReplay *models.ArticleReplay `json:"article_reply,omitempty"`
-	ToUsername    string                `json:"to_username,omitempty"`
+	Username      string               `json:"username,omitempty"`
+	Avatar        string               `json:"avatar,omitempty"`
+	ArticleReplay models.ArticleReplay `json:"article_reply,omitempty"`
+	ToUsername    string               `json:"to_username,omitempty"`
 }
 
 type userCache struct {
@@ -43,12 +43,11 @@ type userCache struct {
 
 // Publish 发布文章
 func Publish(c *gin.Context) {
-	var articleInfo *models.ArticleInfo
-
+	var articleInfo models.ArticleInfo
 	// 绑定json数据
-	err := c.ShouldBindJSON(articleInfo)
+	err := c.ShouldBindJSON(&articleInfo)
 	if err != nil {
-		logx.GetLogger("logx").Errorf("解析请求失败，%v", err)
+		logx.GetLogger("logx").Errorf("解析请求失败", err)
 		panic("解析请求失败，%v" + err.Error())
 	}
 
@@ -62,20 +61,36 @@ func Publish(c *gin.Context) {
 	articleInfo.UserID = userId.(string)
 
 	// 插入数据库
-	database.MyDB.Create(articleInfo)
+	res := database.MyDB.Create(&articleInfo)
+	if res.Error != nil {
+		logx.GetLogger("logx").Errorf("数据库写入异常:%s", res.Error.Error())
+		panic("数据库写入异常" + res.Error.Error())
+	}
+
+	// 修改分类下面的文章数目
+	res = database.MyDB.Model(&models.ArticleType{}).
+		Where("article_type_id = ?", articleInfo.TypeID).
+		Update("article_num", gorm.Expr("article_num + 1"))
+
+	if res.Error != nil {
+		logx.GetLogger("logx").Errorf("更新文章数目有误:%s", res.Error.Error())
+		panic("数据库写入异常" + res.Error.Error())
+	}
+
+	c.JSON(http.StatusOK, result.NewResult(result.EnmuHttptatus.RequestSuccess, "发布成功", nil))
 }
 
 // 修改文章
 func UpdateArticle(c *gin.Context) {
-	var articleInfo *models.ArticleInfo
-	err := c.ShouldBindJSON(articleInfo)
+	var articleInfo models.ArticleInfo
+	err := c.ShouldBindJSON(&articleInfo)
 	if err != nil {
 		logx.GetLogger("logx").Errorf("解析请求失败，%v", err)
 		panic("解析请求失败")
 	}
 	// 先查询到文章信息
-	var articleformdatabase *models.ArticleInfo
-	res := database.MyDB.First(articleformdatabase, "article_id = ?", articleInfo.ArticleID)
+	var articleformdatabase models.ArticleInfo
+	res := database.MyDB.First(&articleformdatabase, "article_id = ?", articleInfo.ArticleID)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("修改文章失败，%v", res.Error)
 		panic("修改文章失败")
@@ -88,7 +103,7 @@ func UpdateArticle(c *gin.Context) {
 		panic("没有权限操作该内容")
 	}
 
-	res = database.MyDB.Model(articleformdatabase).
+	res = database.MyDB.Model(&articleformdatabase).
 		Updates(models.ArticleInfo{
 			ArticleName: articleInfo.ArticleName,
 			ArticleDesc: articleInfo.ArticleDesc,
@@ -156,7 +171,7 @@ func GetArticleList(c *gin.Context) {
 func GetArticleInfo(c *gin.Context) {
 	// 获取文章信息
 	articleId := c.Query("article_id")
-	var articleInfo *models.ArticleInfo
+	var articleInfo models.ArticleInfo
 
 	res := database.MyDB.First(&articleInfo, "article_id = ?", articleId)
 	if res.Error != nil {
@@ -164,18 +179,18 @@ func GetArticleInfo(c *gin.Context) {
 		panic("获取文章信息失败，%v" + res.Error.Error())
 	}
 
-	var userinfo *models.UserInfo
+	var userinfo models.UserInfo
 
 	// 使用文章信息查询用户信息
-	res = database.MyDB.Select("username", "avatar").First(userinfo, "user_id = ?", articleInfo.UserID)
+	res = database.MyDB.Select("username", "avatar").First(&userinfo, "user_id = ?", articleInfo.UserID)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取用户信息失败，%v", res.Error)
 		panic("获取用户信息失败，%v" + res.Error.Error())
 	}
 
 	// 使用文章信息查询文章类型
-	var articleType *models.ArticleType
-	res = database.MyDB.Select("article_type_name").First(articleType, "type_id = ?", articleInfo.TypeID)
+	var articleType models.ArticleType
+	res = database.MyDB.Select("article_type_name").First(&articleType, "type_id = ?", articleInfo.TypeID)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取文章类型失败，%v", res.Error)
 		panic("获取文章类型失败，%v" + res.Error.Error())
@@ -185,9 +200,9 @@ func GetArticleInfo(c *gin.Context) {
 		Code: result.EnmuHttptatus.RequestSuccess,
 		Msg:  "获取文章信息成功",
 		Data: &article{
-			UserInfo:    userinfo,
-			ArticleInfo: articleInfo,
-			ArticleType: articleType,
+			UserInfo:    &userinfo,
+			ArticleInfo: &articleInfo,
+			ArticleType: &articleType,
 		},
 	})
 }
@@ -228,12 +243,17 @@ func DeleteArticle(c *gin.Context) {
 	database.MyDB.Model(&models.ArticleType{}).
 		Where("article_type_id = ?", article.TypeID).
 		UpdateColumn("article_num", gorm.Expr("article_num - ?", 1))
+
+	c.JSON(http.StatusOK, result.Result{
+		Code: result.EnmuHttptatus.RequestSuccess,
+		Msg:  "删除文章成功",
+	})
 }
 
 // 文章评论 ArticleReplay
 func ArticleReplay(c *gin.Context) {
-	var articleReplay *models.ArticleReplay
-	err := c.ShouldBindJSON(articleReplay)
+	var articleReplay models.ArticleReplay
+	err := c.ShouldBindJSON(&articleReplay)
 	if err != nil {
 		logx.GetLogger("logx").Errorf("参数解析错误:%s", err.Error())
 		panic("参数解析错误")
@@ -248,15 +268,15 @@ func ArticleReplay(c *gin.Context) {
 	articleReplay.CreateTime = time.Now().Format("2006-01-02 15:04:05")
 	articleReplay.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 
-	res := database.MyDB.Create(articleReplay)
+	res := database.MyDB.Create(&articleReplay)
 	if res.Error != nil {
-		logx.GetLogger("logx").Errorf("添加评论失败:%s", res.Error.Error())
-		panic("添加评论失败")
+		logx.GetLogger("logx").Errorf("评论失败:%s", res.Error.Error())
+		panic("评论失败")
 	}
 
 	c.JSON(http.StatusOK, result.Result{
 		Code: result.EnmuHttptatus.RequestSuccess,
-		Msg:  "添加评论成功",
+		Msg:  "评论成功",
 	})
 }
 
@@ -264,8 +284,8 @@ func ArticleReplay(c *gin.Context) {
 func DeleteReplay(c *gin.Context) {
 	replayId := c.Query("article_replay_id")
 
-	var articleReplay *models.ArticleReplay
-	res := database.MyDB.First(articleReplay, "article_replay_id = ?", replayId)
+	var articleReplay models.ArticleReplay
+	res := database.MyDB.First(&articleReplay, "article_replay_id = ?", replayId)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取评论失败:%s", res.Error.Error())
 		panic("获取评论失败")
@@ -280,7 +300,7 @@ func DeleteReplay(c *gin.Context) {
 		})
 	}
 
-	res = database.MyDB.Model(articleReplay).Update("is_deleted", "1")
+	res = database.MyDB.Model(&articleReplay).Update("is_deleted", "1")
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("删除评论失败:%s", res.Error.Error())
 		panic("删除评论失败")
@@ -301,47 +321,58 @@ func GetCommentList(c *gin.Context) {
 	pageSizeInt, _ := strconv.Atoi(pageSize)
 
 	articleId := c.Query("article_id")
-	var rootsArticleReplayList []*rootInfo
+	var tmp []models.ArticleReplay
+	var rootsArticleReplayList []rootInfo
 	// 查询评论根节点 parent_id为空
-	res := database.MyDB.Where("article_id = ? and is_deleted = ? and parent_id = IS NULL", articleId, "0").
+	res := database.MyDB.
+		Where("article_id = ? and is_deleted = 0 and parent_id = ''", articleId).
 		Order("create_time DESC").
 		Offset((pageInt - 1) * pageSizeInt).
 		Limit(pageSizeInt).
-		Find(&rootsArticleReplayList)
+		Find(&tmp)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取评论列表失败:%s", res.Error.Error())
 		panic("获取评论列表失败")
 	}
 
+	for _, replay := range tmp {
+		rootsArticleReplayList = append(rootsArticleReplayList, rootInfo{
+			ArticleReplay: replay,
+		})
+	}
+
 	// 获取评论的用户id
 	stringSet := set.NewStringSet()
-	for _, replay := range rootsArticleReplayList {
+	for i, replay := range rootsArticleReplayList {
 		stringSet.Add(replay.ArticleReplay.UserID)
-		var chlidrensInfo []*chlidrenInfo
+		var chlidrensInfo []chlidrenInfo
 		// 查询所有子评论
 		err := database.MyDB.
-			Where("article_id = ? and is_deleted = ? and parent_id = ?", articleId, "0", replay.ArticleReplay.UserID).
+			Where("article_id = ? and is_deleted = 0 and parent_id = ?", articleId, replay.ArticleReplay.ArticleReplayID).
 			Order("create_time").
-			Find(chlidrensInfo).Error
+			Find(&tmp).Error
 		if err != nil {
 			logx.GetLogger("logx").Errorf("获取子评论失败:%s", err.Error())
 			panic("获取子评论失败")
 		}
-		for _, chlidren := range chlidrensInfo {
-			stringSet.Add(chlidren.ArticleReplay.UserID)
+		for _, replayInfo := range tmp {
+			stringSet.Add(replayInfo.UserID)
+			chlidrensInfo = append(chlidrensInfo, chlidrenInfo{
+				ArticleReplay: replayInfo,
+			})
 		}
-		replay.ChlidrenInfo = chlidrensInfo
+		rootsArticleReplayList[i].ChlidrenInfo = chlidrensInfo
 	}
 
 	// 一次性获取到所有的用户信息
 	userInfo := GetCommentUserInfo(stringSet.List())
-	for _, replay := range rootsArticleReplayList {
-		replay.Avatar = userInfo[replay.ArticleReplay.UserID].Avatar
-		replay.Username = userInfo[replay.ArticleReplay.UserID].Username
-		for _, chlidren := range replay.ChlidrenInfo {
-			chlidren.Avatar = userInfo[chlidren.ArticleReplay.UserID].Avatar
-			chlidren.Username = userInfo[chlidren.ArticleReplay.UserID].Username
-			chlidren.ToUsername = userInfo[chlidren.ArticleReplay.ToID].Username
+	for i, replay := range rootsArticleReplayList {
+		rootsArticleReplayList[i].Avatar = userInfo[replay.ArticleReplay.UserID].Avatar
+		rootsArticleReplayList[i].Username = userInfo[replay.ArticleReplay.UserID].Username
+		for j, _ := range replay.ChlidrenInfo {
+			rootsArticleReplayList[i].ChlidrenInfo[j].Avatar = userInfo[rootsArticleReplayList[i].ChlidrenInfo[j].ArticleReplay.UserID].Avatar
+			rootsArticleReplayList[i].ChlidrenInfo[j].Username = userInfo[rootsArticleReplayList[i].ChlidrenInfo[j].ArticleReplay.UserID].Username
+			rootsArticleReplayList[i].ChlidrenInfo[j].ToUsername = userInfo[rootsArticleReplayList[i].ChlidrenInfo[j].ArticleReplay.ToID].Username
 		}
 	}
 
@@ -353,8 +384,8 @@ func GetCommentList(c *gin.Context) {
 }
 
 func GetCommentUserInfo(userID []string) map[string]userCache {
-	var userInfo []*models.UserInfo
-	res := database.MyDB.Where("user_id in ?", userID).Select("user_id", "username", "avatar").First(userInfo)
+	var userInfo []models.UserInfo
+	res := database.MyDB.Where("user_id in ?", userID).Select("user_id", "username", "avatar").Find(&userInfo)
 	if res.Error != nil {
 		logx.GetLogger("logx").Errorf("获取用户信息失败:%s", res.Error.Error())
 		panic("获取用户信息失败")

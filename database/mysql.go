@@ -5,6 +5,7 @@ import (
 	"FullTimeTeacher/log/logx"
 	"FullTimeTeacher/models"
 	"fmt"
+	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,7 +23,10 @@ func InitMySQL(config config.MySQLConfig) {
 		config.DBName)
 
 	var err error
-	MyDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	MyDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// 开启日志
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		logx.GetLogger("logx").Errorf("数据库连接失败: %v", err)
 	}

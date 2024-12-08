@@ -7,7 +7,9 @@ import (
 	"FullTimeTeacher/utils/email"
 	"FullTimeTeacher/utils/result"
 	"context"
+	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"time"
@@ -73,6 +75,14 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 判断邮箱是否已经被注册
+	var user models.UserInfo
+	res := database.MyDB.First(&user, "email = ?", registerInfo.Email)
+	if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		logx.GetLogger("logx").Infof("Register|RegisterInfo: %v", user.String())
+		c.JSON(http.StatusOK, result.NewResult(result.EnmuHttptatus.UserIsRegistered, "邮箱已经被注册,可直接登录", nil))
+	}
+
 	// uuid生成用户id
 	userID := uuid.New().String()
 	// 去除uuid的-
@@ -89,7 +99,7 @@ func Register(c *gin.Context) {
 	username := fmt.Sprintf("user_%s", userID[:8])
 
 	// 注册用户
-	database.MyDB.Create(&models.UserInfo{
+	res = database.MyDB.Create(&models.UserInfo{
 		UserID:     userID,
 		Username:   username,
 		Email:      registerInfo.Email,
@@ -97,6 +107,11 @@ func Register(c *gin.Context) {
 		Avatar:     "https://img.tuxiangyan.com/uploads/allimg/2021082810/rd22b0qzue1.jpg",
 		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
 	})
+
+	if res.Error != nil {
+		c.JSON(http.StatusOK, result.NewResult(result.EnmuHttptatus.ParamError, "注册失败", nil))
+		return
+	}
 
 	c.JSON(http.StatusOK, result.NewResult(result.EnmuHttptatus.RequestSuccess, "注册成功", nil))
 }
